@@ -1,9 +1,12 @@
 import { GetStaticProps } from 'next';
+import Link from 'next/link';
+import { FiCalendar, FiUser } from 'react-icons/fi';
 
 import { getPrismicClient } from '../services/prismic';
 
 import commonStyles from '../styles/common.module.scss';
 import styles from './home.module.scss';
+import Header from '../components/Header';
 
 interface Post {
   uid?: string;
@@ -24,13 +27,40 @@ interface HomeProps {
   postsPagination: PostPagination;
 }
 
-// export default function Home() {
-//   // TODO
-// }
+export default function Home(): JSX.Element {
+  return (
+    <>
+      <main className={commonStyles.container}>
+        <Header />
 
+        <div className={styles.posts}>
+          <Link href="/">
+            <a className={styles.post}>
+              <strong>Titulo</strong>
+              <p>texto sobre algum assunto</p>
+              <ul>
+                <li>
+                  <FiCalendar />
+                  14 Mai 2020
+                </li>
+                <li>
+                  <FiUser />
+                  Usuario Tal
+                </li>
+              </ul>
+            </a>
+          </Link>
+        </div>
+      </main>
+    </>
+  );
+}
 // export const getStaticProps = async () => {
-//   // const prismic = getPrismicClient();
-//   // const postsResponse = await prismic.query(TODO);
+//   const prismic = getPrismicClient();
+//   const postsResponse = await prismic.query(TODO);
 
-//   // TODO
+//   TODO;
 // };
+// function TODO(TODO: any) {
+//   throw new Error('Function not implemented.');
+// }
