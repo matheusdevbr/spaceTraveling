@@ -51,6 +51,22 @@ export default function Home(): JSX.Element {
             </a>
           </Link>
         </div>
+        <div className={styles.posts}>
+          <Link href="/">
+            <a className={styles.post}>
+              <strong>Titulo</strong>
+              <p>texto sobre algum assunto sjd ajsdajs</p>
+              <ul>
+                <FiCalendar />
+                <li>14 Mai 2020</li>
+                <FiUser />
+                <li>Usuario Tal</li>
+              </ul>
+            </a>
+          </Link>
+
+          <button type="button">Carregar mais posts</button>
+        </div>
       </main>
     </>
   );
