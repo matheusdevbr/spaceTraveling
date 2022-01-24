@@ -3,6 +3,9 @@ import Link from 'next/link';
 import { FiCalendar, FiUser } from 'react-icons/fi';
 import Prismic from '@prismicio/client';
 
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+
 import { getPrismicClient } from '../services/prismic';
 
 import commonStyles from '../styles/common.module.scss';
@@ -29,6 +32,19 @@ interface HomeProps {
 }
 
 export default function Home({ postsPagination }: HomeProps): JSX.Element {
+  const formattedPost = postsPagination.results.map(post => {
+    return {
+      ...post,
+      first_publication_date: format(
+        new Date(post.first_publication_date),
+        'dd MMM yyyy',
+        {
+          locale: ptBR,
+        }
+      ),
+    };
+  });
+
   return (
     <>
       <main className={commonStyles.container}>
@@ -40,14 +56,10 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
               <strong>Titulo</strong>
               <p>texto sobre algum assunto</p>
               <ul>
-                <li>
-                  <FiCalendar />
-                  14 Mai 2020
-                </li>
-                <li>
-                  <FiUser />
-                  Usuario Tal
-                </li>
+                <FiCalendar />
+                <li>14 Mai 2020</li>
+                <FiUser />
+                <li>Usuario Tal</li>
               </ul>
             </a>
           </Link>
@@ -77,7 +89,7 @@ export const getStaticProps: GetStaticProps = async () => {
   const postsResponse = await prismic.query(
     [Prismic.Predicates.at('document.type', 'posts')],
     {
-      pageSize: 3,
+      pageSize: 1,
     }
   );
 
