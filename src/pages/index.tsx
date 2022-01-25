@@ -6,6 +6,7 @@ import Prismic from '@prismicio/client';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
+import { useState } from 'react';
 import { getPrismicClient } from '../services/prismic';
 
 import commonStyles from '../styles/common.module.scss';
@@ -45,40 +46,64 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
     };
   });
 
+  const [posts, setPosts] = useState<Post[]>(formattedPost);
+  const [nextPage, setNextPage] = useState(postsPagination.next_page);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  async function handleNextPage(): Promise<void> {
+    if (currentPage !== 1 && nextPage === null) {
+      return;
+    }
+
+    const postsResults = await fetch(`${nextPage}`).then(response =>
+      response.json()
+    );
+    setNextPage(postsResults.next_page);
+    setCurrentPage(postsResults.page);
+
+    const newPosts = postsResults.results.map(post => {
+      return {
+        uid: post.uid,
+        first_publication_date: format(
+          new Date(post.first_publication_date),
+          'dd MMM yyyy',
+          {
+            locale: ptBR,
+          }
+        ),
+        data: {
+          title: post.data.title,
+          subtitle: post.data.subtitle,
+          author: post.data.author,
+        },
+      };
+    });
+
+    setPosts([...posts, ...newPosts]);
+  }
+
   return (
     <>
       <main className={commonStyles.container}>
         <Header />
-
         <div className={styles.posts}>
-          <Link href="/">
-            <a className={styles.post}>
-              <strong>Titulo</strong>
-              <p>texto sobre algum assunto</p>
-              <ul>
-                <FiCalendar />
-                <li>14 Mai 2020</li>
-                <FiUser />
-                <li>Usuario Tal</li>
-              </ul>
-            </a>
-          </Link>
-        </div>
-        <div className={styles.posts}>
-          <Link href="/">
-            <a className={styles.post}>
-              <strong>Titulo</strong>
-              <p>texto sobre algum assunto sjd ajsdajs</p>
-              <ul>
-                <FiCalendar />
-                <li>14 Mai 2020</li>
-                <FiUser />
-                <li>Usuario Tal</li>
-              </ul>
-            </a>
-          </Link>
-
-          <button type="button">Carregar mais posts</button>
+          {posts.map(post => (
+            <Link href={`/post/${post.uid}`} key={post.uid}>
+              <a className={styles.post}>
+                <strong>{post.data.title}</strong>
+                <p>{post.data.subtitle}</p>
+                <ul>
+                  <FiCalendar />
+                  <li>{post.first_publication_date}</li>
+                  <FiUser />
+                  <li>{post.data.author}</li>
+                </ul>
+              </a>
+            </Link>
+          ))}
+          <button type="button" onClick={handleNextPage}>
+            Carregar mais posts
+          </button>
         </div>
       </main>
     </>
