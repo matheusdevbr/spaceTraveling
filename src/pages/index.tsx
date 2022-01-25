@@ -2,6 +2,7 @@ import { GetStaticProps } from 'next';
 import Link from 'next/link';
 import { FiCalendar, FiUser } from 'react-icons/fi';
 import Prismic from '@prismicio/client';
+import Head from 'next/head';
 
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -84,6 +85,9 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
 
   return (
     <>
+      <Head>
+        <title>Home</title>
+      </Head>
       <main className={commonStyles.container}>
         <Header />
         <div className={styles.posts}>
@@ -101,14 +105,17 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
               </a>
             </Link>
           ))}
-          <button type="button" onClick={handleNextPage}>
-            Carregar mais posts
-          </button>
+          {nextPage && (
+            <button type="button" onClick={handleNextPage}>
+              Carregar mais posts
+            </button>
+          )}
         </div>
       </main>
     </>
   );
 }
+
 export const getStaticProps: GetStaticProps = async () => {
   const prismic = getPrismicClient();
   const postsResponse = await prismic.query(
