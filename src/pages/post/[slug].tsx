@@ -35,7 +35,7 @@ export default function Post({ post }: PostProps): JSX.Element {
       <img src="/teste.png" alt="post images" className={styles.banner} />
       <main className={commonStyles.container}>
         <div className={styles.post}>
-          <div className={styles.headerPost}>
+          <div className={styles.postTop}>
             <h1>Titulo principal do post</h1>
             <ul>
               <FiCalendar />
@@ -72,16 +72,44 @@ export default function Post({ post }: PostProps): JSX.Element {
   );
 }
 
-// export const getStaticPaths = async () => {
-//   const prismic = getPrismicClient();
-//   const posts = await prismic.query(TODO);
+export const getStaticPaths: GetStaticPaths = async () => {
+  //   const prismic = getPrismicClient();
+  //   const posts = await prismic.query(TODO);
 
-//   // TODO
-// };
+  return {
+    paths: [],
+    fallback: true,
+  };
+};
 
-// export const getStaticProps = async context => {
-//   const prismic = getPrismicClient();
-//   const response = await prismic.getByUID(TODO);
+export const getStaticProps: GetStaticProps = async context => {
+  const prismic = getPrismicClient();
+  const { slug } = context.params;
+  const response = await prismic.getByUID('posts', String(slug), {});
 
-//   // TODO
-// };
+  const post = {
+    uid: response.uid,
+    first_publication_date: response.first_publication_date,
+    last_publication_date: response.last_publication_date,
+    data: {
+      title: response.data.title,
+      subtitle: response.data.subtitle,
+      author: response.data.author,
+      banner: {
+        url: response.data.banner.url,
+      },
+      content: response.data.content.map(content => {
+        return {
+          heading: content.heading,
+          body: [...content.body],
+        };
+      }),
+    },
+  };
+
+  return {
+    props: {
+      post,
+    },
+  };
+};
