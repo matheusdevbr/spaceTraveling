@@ -1,7 +1,8 @@
 import { GetStaticPaths, GetStaticProps } from 'next';
+import { RichText } from 'prismic-dom';
 import { FiCalendar, FiClock, FiUser } from 'react-icons/fi';
+import Prismic from '@prismicio/client';
 import Header from '../../components/Header';
-
 import { getPrismicClient } from '../../services/prismic';
 
 import commonStyles from '../../styles/common.module.scss';
@@ -32,40 +33,35 @@ export default function Post({ post }: PostProps): JSX.Element {
   return (
     <>
       <Header />
-      <img src="/teste.png" alt="post images" className={styles.banner} />
+      <img src={post.data.banner.url} alt="imagem" className={styles.banner} />
       <main className={commonStyles.container}>
         <div className={styles.post}>
           <div className={styles.postTop}>
-            <h1>Titulo principal do post</h1>
+            <h1>{post.data.title}</h1>
             <ul>
               <FiCalendar />
               <li>25 Jan 2022</li>
               <FiUser />
-              <li>Matheus S</li>
+              <li>{post.data.author}</li>
               <FiClock />
               <li>10 min</li>
             </ul>
           </div>
 
-          <article>
-            <h2>Titulo do paragraph</h2>
-            <p>
-              Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-              Architecto, omnis aspernatur facere unde{' '}
-              <strong>natus explicabo quo dignissimos </strong>minus mollitia
-              dol oremque quos saepe nulla animi debitis qui optio consectetur
-              numquam dolores rec usandae cupiditate? Dolorum eveniet
-              repudiandae debitis perferendis itaque deserunt veritat is amet,
-              et
-              <a href="/"> provident quo libero repellendus ad deleniti</a>{' '}
-              autem facilis assumenda in doloremque, dolores laudantium minus
-              illo quos nostrum quasi. Aliquid odio nulla sit sunt, minima
-              commodi repellat quidem incidunt eius voluptas error sequi eum?
-              Enim optio excepturi quibusdam minima mollitia temporibus ,
-              exercitationem deleniti! Placeat tempora ex dignissimos quos
-              nihil?
-            </p>
-          </article>
+          {post.data.content.map(content => {
+            return (
+              <article key={content.heading}>
+                <h2>{content.heading}</h2>
+                <div
+                  className={styles.postContent}
+                  // eslint-disable-next-line react/no-danger
+                  dangerouslySetInnerHTML={{
+                    __html: RichText.asHtml(content.body),
+                  }}
+                />
+              </article>
+            );
+          })}
         </div>
       </main>
     </>
@@ -73,11 +69,20 @@ export default function Post({ post }: PostProps): JSX.Element {
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  //   const prismic = getPrismicClient();
-  //   const posts = await prismic.query(TODO);
+  const prismic = getPrismicClient();
+  const posts = await prismic.query([
+    Prismic.Predicates.at('document.type', 'posts'),
+  ]);
 
+  const paths = posts.results.map(post => {
+    return {
+      params: {
+        slug: post.uid,
+      },
+    };
+  });
   return {
-    paths: [],
+    paths,
     fallback: true,
   };
 };
