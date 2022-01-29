@@ -2,9 +2,11 @@ import { GetStaticPaths, GetStaticProps } from 'next';
 import { RichText } from 'prismic-dom';
 import { FiCalendar, FiClock, FiUser } from 'react-icons/fi';
 import Prismic from '@prismicio/client';
+import { useRouter } from 'next/router';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import Header from '../../components/Header';
 import { getPrismicClient } from '../../services/prismic';
-
 import commonStyles from '../../styles/common.module.scss';
 import styles from './post.module.scss';
 
@@ -30,6 +32,30 @@ interface PostProps {
 }
 
 export default function Post({ post }: PostProps): JSX.Element {
+  const router = useRouter();
+
+  if (router.isFallback) {
+    return <h1>Carregando...</h1>;
+  }
+
+  const totalWords = post.data.content.reduce((total, contentItem) => {
+    // eslint-disable-next-line no-param-reassign
+    total += contentItem.heading.split(' ').length;
+
+    const words = contentItem.body.map(item => item.text.split(' ').length);
+    words.map(word => (total += word));
+    return total;
+  }, 0);
+  const readTime = Math.ceil(totalWords / 200);
+
+  const formatedDate = format(
+    new Date(post.first_publication_date),
+    'dd MMM yyyy',
+    {
+      locale: ptBR,
+    }
+  );
+
   return (
     <>
       <Header />
@@ -40,11 +66,11 @@ export default function Post({ post }: PostProps): JSX.Element {
             <h1>{post.data.title}</h1>
             <ul>
               <FiCalendar />
-              <li>25 Jan 2022</li>
+              <li>{formatedDate}</li>
               <FiUser />
               <li>{post.data.author}</li>
               <FiClock />
-              <li>10 min</li>
+              <li>{`${readTime} min`}</li>
             </ul>
           </div>
 
